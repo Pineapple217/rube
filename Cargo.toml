@@ -1,0 +1,14 @@
+[package]
+name = "rube"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+term_size = "0.3.2"
+
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true
+codegen-units = 1
+panic = "abort"
