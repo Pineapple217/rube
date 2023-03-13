@@ -47,8 +47,8 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
     };
     let mut prev_corner: Option<(usize, usize)> = None;
     for corner in &cube.vertices {
-        let pos_x = ((corner[0] * size as f32 * 0.3) + frame_size.x as f32 * 0.5) as usize;
-        let pos_y = ((corner[1] * size as f32 * 0.3 * 0.6) + frame_size.y as f32 * 0.5) as usize;
+        let pos_x = ((corner[0] * size as f32 * 0.4) + frame_size.x as f32 * 0.5) as usize;
+        let pos_y = ((corner[1] * size as f32 * 0.4 * 0.6) + frame_size.y as f32 * 0.5) as usize;
         // frame[pos_y][pos_x] = '#';
         if let Some((p_x, p_y)) = prev_corner {
             for (x, y) in bresenham_line(*&pos_x as i32, *&pos_y as i32, *&p_x as i32, *&p_y as i32)
@@ -64,7 +64,7 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
 
 fn update_state(cube: &mut Cube) {
     for corner in &mut cube.vertices {
-        let (x, y, z) = draai(&corner[0], &corner[1], &corner[2], &0.0, &0.03, &0.0);
+        let (x, y, z) = draai(&corner[0], &corner[1], &corner[2], &-0.02, &0.03, &-0.015);
         corner[0] = x;
         corner[1] = y;
         corner[2] = z;
