@@ -1,4 +1,8 @@
-use std::io::{self, Write, BufWriter};
+use std::io::{self, BufWriter, Write};
+use std::{
+    thread,
+    time::{Duration, Instant},
+};
 use term_size;
 
 const CUBE_INIT_STATE: [[f32; 3]; 8] = [
@@ -132,11 +136,14 @@ fn main() {
     print!("{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
 
     let mut frame;
+    let wait_time = Duration::from_millis(16);
 
     loop {
+        let start = Instant::now();
+
         let (term_w, term_h) = term_size::dimensions().unwrap();
         frame_size.x = term_w;
-        frame_size.y = term_h - 1;
+        frame_size.y = term_h - 2;
         update_state(&mut cube);
         frame = render_cube(&cube, &frame_size);
 
@@ -151,6 +158,14 @@ fn main() {
         print!("{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
         io::stdout().flush().unwrap();
 
-        std::thread::sleep(std::time::Duration::from_millis(17));
+        let runtime = start.elapsed();
+
+        if let Some(remaining) = wait_time.checked_sub(runtime) {
+            eprintln!(
+                "schedule slice has time left over; sleeping for {:?}",
+                remaining
+            );
+            thread::sleep(remaining);
+        }
     }
 }
