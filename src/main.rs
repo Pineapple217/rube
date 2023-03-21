@@ -1,4 +1,4 @@
-use std::io::{self, BufWriter, Write};
+use std::io::{BufWriter, Write};
 use std::{
     thread,
     time::{Duration, Instant},
@@ -63,7 +63,7 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
         if let Some((p_x, p_y)) = prev_corner {
             for (x, y) in bresenham_line(*&pos_x as i32, *&pos_y as i32, *&p_x as i32, *&p_y as i32)
             {
-                frame[y][x] = '•'
+                frame[y][x] = '#';
             }
         }
 
@@ -133,10 +133,10 @@ fn main() {
     }
 
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    print!("{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
 
     let mut frame;
-    let wait_time = Duration::from_millis(16);
+    // let wait_time = Duration::from_millis(17);
+    let wait_time = Duration::from_secs_f32(1.0 / 60.0);
 
     loop {
         let start = Instant::now();
@@ -149,23 +149,21 @@ fn main() {
 
         let stdout = std::io::stdout();
         let lock = stdout.lock();
-        let mut buffer = BufWriter::with_capacity(frame_size.x * frame_size.y, lock);
+        let mut buffer = BufWriter::with_capacity(frame_size.x * (frame_size.y + 2), lock); // er is ergens een buffer size limit of zo ma idk
+
+        writeln!(buffer, "{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
         for line in &frame {
             writeln!(buffer, "{}", line.iter().collect::<String>()).unwrap();
         }
-        buffer.flush().unwrap();
-
-        print!("{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
-        io::stdout().flush().unwrap();
 
         let runtime = start.elapsed();
 
         if let Some(remaining) = wait_time.checked_sub(runtime) {
-            eprintln!(
-                "schedule slice has time left over; sleeping for {:?}",
-                remaining
-            );
+            write!(buffer, "frametime: {:?}", runtime);
+            buffer.flush().unwrap();
             thread::sleep(remaining);
+        } else {
+            buffer.flush().unwrap();
         }
     }
 }
