@@ -1,4 +1,4 @@
-use std::io::{self, Write};
+use std::io::{self, Write, BufWriter};
 use term_size;
 
 const CUBE_INIT_STATE: [[f32; 3]; 8] = [
@@ -139,12 +139,18 @@ fn main() {
         frame_size.y = term_h - 1;
         update_state(&mut cube);
         frame = render_cube(&cube, &frame_size);
+
+        let stdout = std::io::stdout();
+        let lock = stdout.lock();
+        let mut buffer = BufWriter::with_capacity(frame_size.x * frame_size.y, lock);
         for line in &frame {
-            print!("{}\n", line.iter().collect::<String>())
+            writeln!(buffer, "{}", line.iter().collect::<String>()).unwrap();
         }
+        buffer.flush().unwrap();
 
         print!("{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
         io::stdout().flush().unwrap();
+
         std::thread::sleep(std::time::Duration::from_millis(17));
     }
 }
