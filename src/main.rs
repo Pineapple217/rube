@@ -63,7 +63,7 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
         if let Some((p_x, p_y)) = prev_corner {
             for (x, y) in bresenham_line(*&pos_x as i32, *&pos_y as i32, *&p_x as i32, *&p_y as i32)
             {
-                frame[y][x] = '*'
+                frame[y][x] = '•'
             }
         }
 
