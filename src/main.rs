@@ -151,7 +151,7 @@ fn main() {
         let lock = stdout.lock();
         let mut buffer = BufWriter::with_capacity(frame_size.x * (frame_size.y + 2), lock); // er is ergens een buffer size limit of zo ma idk
 
-        writeln!(buffer, "{esc}[{n}A", esc = 27 as char, n = term_h); // Moves n lines up
+        writeln!(buffer, "{esc}[{n}A", esc = 27 as char, n = term_h).unwrap(); // Moves n lines up
         for line in &frame {
             writeln!(buffer, "{}", line.iter().collect::<String>()).unwrap();
         }
@@ -159,7 +159,7 @@ fn main() {
         let runtime = start.elapsed();
 
         if let Some(remaining) = wait_time.checked_sub(runtime) {
-            write!(buffer, "frametime: {:?}", runtime);
+            write!(buffer, "frametime: {:?}", runtime).unwrap();
             buffer.flush().unwrap();
             thread::sleep(remaining);
         } else {
