@@ -5,15 +5,30 @@ use std::{
 };
 use term_size;
 
+const CUBE_RIBS: [[i32; 2]; 12] = [
+    [0, 1],
+    [0, 3],
+    [0, 7],
+    [1, 2],
+    [1, 6],
+    [2, 5],
+    [2, 3],
+    [3, 4],
+    [4, 5],
+    [4, 7],
+    [5, 6],
+    [6, 7],
+];
+
 const CUBE_INIT_STATE: [[f32; 3]; 8] = [
-    [1.0, 1.0, 1.0],
-    [1.0, -1.0, 1.0],
-    [-1.0, -1.0, 1.0],
-    [-1.0, 1.0, 1.0],
-    [-1.0, 1.0, -1.0],
-    [-1.0, -1.0, -1.0],
-    [1.0, -1.0, -1.0],
-    [1.0, 1.0, -1.0],
+    [1.0, 1.0, 1.0],    // 0
+    [1.0, -1.0, 1.0],   // 1
+    [-1.0, -1.0, 1.0],  // 2
+    [-1.0, 1.0, 1.0],   // 3
+    [-1.0, 1.0, -1.0],  // 4
+    [-1.0, -1.0, -1.0], // 5
+    [1.0, -1.0, -1.0],  // 6
+    [1.0, 1.0, -1.0],   // 7
 ];
 
 struct Cube {
@@ -55,19 +70,25 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
     } else {
         frame_size.x
     };
-    let mut prev_corner: Option<(usize, usize)> = None;
+    let mut corners: Vec<(usize, usize)> = vec![];
     for corner in &cube.vertices {
         let pos_x = ((corner[0] * size as f32 * 0.4) + frame_size.x as f32 * 0.5) as usize;
         let pos_y = ((corner[1] * size as f32 * 0.4 * 0.55) + frame_size.y as f32 * 0.5) as usize;
         // frame[pos_y][pos_x] = '#';
-        if let Some((p_x, p_y)) = prev_corner {
-            for (x, y) in bresenham_line(*&pos_x as i32, *&pos_y as i32, *&p_x as i32, *&p_y as i32)
-            {
-                frame[y][x] = '#';
-            }
+        // if let Some((p_x, p_y)) = prev_corner {
+        //     for (x, y) in bresenham_line(*&pos_x as i32, *&pos_y as i32, *&p_x as i32, *&p_y as i32)
+        //     {
+        //         frame[y][x] = '#';
+        //     }
+        // }
+        corners.push((pos_x, pos_y));
+    }
+    for rib in CUBE_RIBS {
+        let (x0, y0) = corners[rib[0] as usize];
+        let (x1, y1) = corners[rib[1] as usize];
+        for (x, y) in bresenham_line(x0 as i32, y0 as i32, x1 as i32, y1 as i32) {
+            frame[y][x] = '#';
         }
-
-        prev_corner = Some((pos_x, pos_y));
     }
     frame
 }
