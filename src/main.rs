@@ -73,7 +73,7 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
     let mut corners: Vec<(usize, usize)> = vec![];
     for corner in &cube.vertices {
         let pos_x = ((corner[0] * size as f32 * 0.4) + frame_size.x as f32 * 0.5) as usize;
-        let pos_y = ((corner[1] * size as f32 * 0.4 * 0.55) + frame_size.y as f32 * 0.5) as usize;
+        let pos_y = ((corner[1] * size as f32 * 0.4 * 0.5) + frame_size.y as f32 * 0.5) as usize;
         // frame[pos_y][pos_x] = '#';
         // if let Some((p_x, p_y)) = prev_corner {
         //     for (x, y) in bresenham_line(*&pos_x as i32, *&pos_y as i32, *&p_x as i32, *&p_y as i32)
@@ -93,9 +93,16 @@ fn render_cube(cube: &Cube, frame_size: &FrameSize) -> Vec<Vec<char>> {
     frame
 }
 
-fn update_state(cube: &mut Cube) {
+fn update_state(cube: &mut Cube, rotage_ang: &[f32; 3]) {
     for corner in &mut cube.vertices {
-        let (x, y, z) = draai(&corner[0], &corner[1], &corner[2], &-0.02, &0.03, &-0.015);
+        let (x, y, z) = draai(
+            &corner[0],
+            &corner[1],
+            &corner[2],
+            &rotage_ang[0],
+            &rotage_ang[1],
+            &rotage_ang[2],
+        );
         corner[0] = x;
         corner[1] = y;
         corner[2] = z;
@@ -158,14 +165,23 @@ fn main() {
     let mut frame;
     // let wait_time = Duration::from_millis(17);
     let wait_time = Duration::from_secs_f32(1.0 / 60.0);
+    let mut accel = [0.0, 0.02, 0.02];
+    let mut i: f32 = 0.0;
 
     loop {
+        i += 0.04;
         let start = Instant::now();
 
         let (term_w, term_h) = term_size::dimensions().unwrap();
         frame_size.x = term_w;
         frame_size.y = term_h - 2;
-        update_state(&mut cube);
+
+        accel[0] = 0.010 * (i + 1.4).sin() + 0.010;
+        accel[1] = 0.020 * (i + 0.3).sin() + 0.014;
+        accel[2] = 0.015 * (i - 0.2).sin() + 0.020;
+        // println!("{:?}", accel);
+
+        update_state(&mut cube, &accel);
         frame = render_cube(&cube, &frame_size);
 
         let stdout = std::io::stdout();
